@@ -1,0 +1,46 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>chatterbox</title>
+    <link rel="stylesheet" href="styles/styles.css">
+
+    <!-- dependencies -->
+    <script src="bower_components/jquery/jquery.min.js"></script>
+    <script src='bower_components/underscore/underscore-min.js'></script>
+    <!-- your scripts -->
+    <script src="env/config.js"></script>
+    <script src="scripts/app.js"></script>
+  </head>
+  <body>
+    <div id="main">
+      <h1>chatterbox</h1>
+      <!-- Your HTML goes here! -->
+
+      <div class="userInput">
+        <select id='roomList'>
+          <option class='roomName' value='allRooms'>All Rooms</option>
+        </select>
+        <form id='newRoom'>
+          <fieldset class='roomField'>
+          <legend class='roomLegend'>Create new room:
+            <input class='newRoomName' type='text'>
+            <button class='submitRoom' type='button'>Create</button>
+          </legend>
+          </fieldset>
+        </form>
+        <form id='userMessage'>
+          <textarea class='messageText' type='text'></textarea>
+          <button class='messageSubmit' type='button'>Submit</button>
+        </form>
+      </div>
+      <div class="allMessages">
+        <div class='holdsButtons'>
+          <button class='getOld'>Next 25</button>
+          <button class='refresh'>Refresh</button>
+        </div>
+        <div class='holdsMessages'></div>
+      </div>
+    </div>
+  </body>
+</html>
