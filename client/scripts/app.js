@@ -12,7 +12,8 @@ function getMessages() {
   $.ajax({
     // This is the url you should use to communicate with the parse API server.
     // 'where={"playerName":"Sean Plott","cheatMode":false}'
-    url: 'https://api.parse.com/1/classes/chatterbox',
+    //url: 'https://api.parse.com/1/classes/chatterbox',
+    url: 'http://127.0.0.1:3000/classes/messages',
     method: 'GET',
     data: {'order':'-createdAt', 'limit':'1000'},
     contentType: 'application/json',
@@ -121,7 +122,8 @@ function buildMessage(index) {
 // sends a json object to Parse server
 function postMessage(newMessage) {
   $.ajax({
-    url: 'https://api.parse.com/1/classes/chatterbox',
+    // url: 'https://api.parse.com/1/classes/chatterbox',
+    url: 'http://127.0.0.1:3000/classes/messages',
     method: 'POST',
     data: newMessage,
     contentType: 'application/json',

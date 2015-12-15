@@ -9,7 +9,7 @@ You'll have to figure out a way to export this function from
 this file and include it in basic-server.js so that it actually works.
 
 *Hint* Check out the node module documentation at http://nodejs.org/api/modules.html.
-
+https://nodejs.org/api/http.html#http_agent_requests
 **************************************************************/
 
 var requestHandler = function(request, response) {
@@ -30,6 +30,7 @@ var requestHandler = function(request, response) {
   console.log("Serving request type " + request.method + " for url " + request.url);
 
   // The outgoing status.
+  // we'll need to make this a function that returns appropriate http status for the request.method and result ...?
   var statusCode = 200;
 
   // See the note below about CORS headers.
@@ -39,11 +40,32 @@ var requestHandler = function(request, response) {
   //
   // You will need to change this if you are sending something
   // other than plain text, like JSON or HTML.
-  headers['Content-Type'] = "text/plain";
+  headers['Content-Type'] = "application/json";
+
+  var returnHeaders = JSON.stringify(headers);
+
+  var returnedObject = {results: ['hi']};
+
+  var json = JSON.stringify(returnedObject);
+
+// http://stackoverflow.com/questions/5892569/responding-with-a-json-object-in-nodejs-converting-object-array-to-json-string
+// function random(response) {
+//   console.log("Request handler random was called.");
+//   response.writeHead(200, {"Content-Type": "application/json"});
+//   var otherArray = ["item1", "item2"];
+//   var otherObject = { item1: "item1val", item2: "item2val" };
+//   var json = JSON.stringify({
+//     anObject: otherObject,
+//     anArray: otherArray,
+//     another: "item"
+//   });
+//   response.end(json);
+// }
+    // results:  a key in the returned object that holds an array of message objects
 
   // .writeHead() writes to the request line and headers of the response,
   // which includes the status and all headers.
-  response.writeHead(statusCode, headers);
+  response.writeHead(statusCode, returnHeaders);
 
   // Make sure to always call response.end() - Node may not send
   // anything back to the client until you do. The string you pass to
@@ -52,8 +74,19 @@ var requestHandler = function(request, response) {
   //
   // Calling .end "flushes" the response's internal buffer, forcing
   // node to actually send all the data over to the client.
-  response.end("Hello, World!");
+  // https://nodejs.org/api/http.html#http_response_end_data_encoding_callback
+  response.end(json);
 };
+
+// createdAt: "2015-09-01T01:00:42.028Z"
+// objectId: "hwhupXO0iX"
+// updatedAt: "2015-09-01T01:00:42.028Z"
+//
+// // roomname: "4chan"
+// // text: "trololo"
+// // username: "shawndrost"
+
+//http://jsbin.com/tepapajoro/edit?js,console
 
 // These headers will allow Cross-Origin Resource Sharing (CORS).
 // This code allows this server to talk to websites that
@@ -70,4 +103,7 @@ var defaultCorsHeaders = {
   "access-control-allow-headers": "content-type, accept",
   "access-control-max-age": 10 // Seconds.
 };
+
+module.exports = requestHandler;
+
 
