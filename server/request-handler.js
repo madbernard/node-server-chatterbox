@@ -50,9 +50,19 @@ var requestHandler = function(request, response) {
 
   var json = JSON.stringify(returnedObject);
 
+  // this will hand 404 code
+    if (request.url !== '/classes/messages') {
+        // change code to 404
+        statusCode = 404;
+
+        response.writeHead(statusCode, returnHeaders);
+        // return (end)
+        response.end(json);
+    }
+
   // checks for the correct url and method
      // if POST
-  console.log(request, 'request');
+  console.log('request.url', request.url);
   if (request.method === 'POST') {
     // change code to 201
     statusCode = 201;
