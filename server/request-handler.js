@@ -11,7 +11,11 @@ this file and include it in basic-server.js so that it actually works.
 *Hint* Check out the node module documentation at http://nodejs.org/api/modules.html.
 https://nodejs.org/api/http.html#http_agent_requests
 **************************************************************/
-
+var dataStorage = {results: []};
+// ultimately to accept new room creation we would add to the accepted URL array
+//when we got '/classes/*' "*" would be added as a fine URL
+//and later returned as room name?
+var acceptedURLs = ['/classes/room','/classes/room1','/classes/messages'];
 
 var requestHandler = function(request, response) {
   // Request and Response come from node's http module.
@@ -29,7 +33,18 @@ var requestHandler = function(request, response) {
   // debugging help, but you should always be careful about leaving stray
   // console.logs in your code.
   console.log("Serving request type " + request.method + " for url " + request.url);
-
+  // what magic word to listen for?  end gets us into this fn
+  //but connect or response doesn't
+  request.on('end', function () {
+      console.log('received response');
+      request.on('data', function(chunk){
+          var dataWeWant = chunk.toString();
+          dataStorage.results.push(JSON.parse(dataWeWant));
+          //console.log(dataStorage, 'dataStorage object');
+          //console.log(chunk.toString(), 'chunk?');
+          //{ username: 'Jono', message: 'Do my bidding!' }
+      });
+  });
 
   // The outgoing status.
   // we'll need to make this a function that returns appropriate http status for the request.method and result ...?
@@ -46,23 +61,41 @@ var requestHandler = function(request, response) {
 
   var returnHeaders = JSON.stringify(headers);
 
-  var returnedObject = {results: []};
+//  var returnedObject = {results: []};
+  var returnedObject = dataStorage;
 
   var json = JSON.stringify(returnedObject);
 
-  // this will hand 404 code
-    if (request.url !== '/classes/messages') {
-        // change code to 404
-        statusCode = 404;
+  var URL = request.url;
+  //calling reg expression, it could get room name later
+  var checkThis = /\/classes\/(.*)/.exec(URL);
+  //console.log(checkThis, 'the regex array');
+  //console.log(checkThis === null, 'the regex array has stuff?');
 
-        response.writeHead(statusCode, returnHeaders);
-        // return (end)
-        response.end(json);
-    }
+  // this will hand 404 code
+  if (checkThis === null) {
+      // change code to 404
+      statusCode = 404;
+
+      response.writeHead(statusCode, returnHeaders);
+      // return (end)
+      response.end(json);
+  }
+ // http://stackoverflow.com/questions/23340968/debugging-node-js-with-node-inspector
+ // http://stackoverflow.com/questions/17251553/nodejs-request-object-documentation
+ //https://nodejs.org/api/http.html#http_class_http_clientrequest
+ // node-inspector --no-preload request-handler.js
+ //   node-debug basic-server.js
+ //   http://127.0.0.1:8080/
+
 
   // checks for the correct url and method
      // if POST
-  console.log('request.url', request.url);
+
+  // we would take the data iaf we could find it
+  // and add it to an object
+  // and send back the object/data to the client
+
   if (request.method === 'POST') {
     // change code to 201
     statusCode = 201;
@@ -124,12 +157,15 @@ var requestHandler = function(request, response) {
 // Another way to get around this restriction is to serve you chat
 // client from this domain by setting up static file serving.
 var defaultCorsHeaders = {
+  "Access-Control-Allow-Origin": "*",
   "access-control-allow-origin": "*",
   "access-control-allow-methods": "GET, POST, PUT, DELETE, OPTIONS",
   "access-control-allow-headers": "content-type, accept",
   "access-control-max-age": 10 // Seconds.
 };
 
-module.exports = requestHandler;
+module.exports = {
+    requestHandler: requestHandler
+};
 
 
