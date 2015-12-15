@@ -12,6 +12,7 @@ this file and include it in basic-server.js so that it actually works.
 https://nodejs.org/api/http.html#http_agent_requests
 **************************************************************/
 
+
 var requestHandler = function(request, response) {
   // Request and Response come from node's http module.
   //
@@ -29,6 +30,7 @@ var requestHandler = function(request, response) {
   // console.logs in your code.
   console.log("Serving request type " + request.method + " for url " + request.url);
 
+
   // The outgoing status.
   // we'll need to make this a function that returns appropriate http status for the request.method and result ...?
   var statusCode = 200;
@@ -44,10 +46,22 @@ var requestHandler = function(request, response) {
 
   var returnHeaders = JSON.stringify(headers);
 
-  var returnedObject = {results: ['hi']};
+  var returnedObject = {results: []};
 
   var json = JSON.stringify(returnedObject);
 
+  // checks for the correct url and method
+     // if POST
+  console.log(request, 'request');
+  if (request.method === 'POST') {
+    // change code to 201
+    statusCode = 201;
+    // add to results array
+
+    response.writeHead(statusCode, returnHeaders);
+    // return (end)
+    response.end(json);
+  }
 // http://stackoverflow.com/questions/5892569/responding-with-a-json-object-in-nodejs-converting-object-array-to-json-string
 // function random(response) {
 //   console.log("Request handler random was called.");
@@ -61,6 +75,8 @@ var requestHandler = function(request, response) {
 //   });
 //   response.end(json);
 // }
+
+
     // results:  a key in the returned object that holds an array of message objects
 
   // .writeHead() writes to the request line and headers of the response,
