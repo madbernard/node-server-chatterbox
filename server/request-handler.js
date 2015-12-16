@@ -1,107 +1,61 @@
-/*************************************************************
-
-You should implement your request handler function in this file.
-
-requestHandler is already getting passed to http.createServer()
-in basic-server.js, but it won't work as is.
-
-You'll have to figure out a way to export this function from
-this file and include it in basic-server.js so that it actually works.
-
-*Hint* Check out the node module documentation at http://nodejs.org/api/modules.html.
-https://nodejs.org/api/http.html#http_agent_requests
-**************************************************************/
+// this storages all of the messages from the client
 var dataStorage = {results: []};
-// ultimately to accept new room creation we would add to the accepted URL array
-//when we got '/classes/*' "*" would be added as a fine URL
-//and later returned as room name?
-var acceptedURLs = ['/classes/room','/classes/room1','/classes/messages'];
 
+// headers filled in on every response.writehead()
+var headers = {
+    "access-control-allow-origin" : "*",
+    "access-control-allow-methods": "GET, POST, PUT, DELETE, OPTIONS",
+    "access-control-allow-headers": "content-type, accept",
+    "access-control-max-age"      : 10, // Seconds.
+    "Content-Type"                : "application/json"
+};
+
+// does the magic
 var requestHandler = function(request, response) {
-  // Request and Response come from node's http module.
-  //
-  // They include information about both the incoming request, such as
-  // headers and URL, and about the outgoing response, such as its status
-  // and content.
-  //
-  // Documentation for both request and response can be found in the HTTP section at
-  // http://nodejs.org/documentation/api/
+  // this console.log is for seeing the method type (GET, POST, etc) and the url
+  // console.log("Serving request type " + request.method + " for url " + request.url);
 
-  // Do some basic logging.
-  //
-  // Adding more logging to your server can be an easy way to get passive
-  // debugging help, but you should always be careful about leaving stray
-  // console.logs in your code.
-  console.log("Serving request type " + request.method + " for url " + request.url);
-  // https://nodejs.org/api/http.html#http_response_getheader_name
-  // The outgoing status.
-  // we'll need to make this a function that returns appropriate http status for the request.method and result ...?
+  // the status code is by default 200
   var statusCode = 200;
-
-  // See the note below about CORS headers.
-  var headers = defaultCorsHeaders;
-
-  // Tell the client we are sending them plain text.
-  //
-  // You will need to change this if you are sending something
-  // other than plain text, like JSON or HTML.
-  headers['Content-Type'] = "application/json";
-
-  //var returnHeaders = JSON.stringify(headers);
-
-//  var returnedObject = {results: []};
-  var returnedObject = dataStorage;
-
-  var json = JSON.stringify(returnedObject);
+  // final data object that is returned to the client and is a string
+  var json = JSON.stringify(dataStorage);
 
   var URL = request.url;
-  //calling reg expression, it could get room name later
+  //calling reg expression
   var checkThis = /\/classes\/(.*)/.exec(URL);
   //console.log(checkThis, 'the regex array');
-  //console.log(checkThis === null, 'the regex array has stuff?');
 
   // this will handle 404 code
+  // if checkThis is null then the url didn't start with /classes/
   if (checkThis === null) {
-      // change code to 404
       statusCode = 404;
 
       response.writeHead(statusCode, 'Not Found', headers);
       // return (end)
       response.end(json);
   }
- // http://stackoverflow.com/questions/23340968/debugging-node-js-with-node-inspector
- // http://stackoverflow.com/questions/17251553/nodejs-request-object-documentation
- //https://nodejs.org/api/http.html#http_class_http_clientrequest
- // node-inspector --no-preload request-handler.js
- //   node-debug basic-server.js
- //   http://127.0.0.1:8080/
 
-
-  // checks for the correct url and method
-     // if POST
-
-  // we would take the data iaf we could find it
-  // and add it to an object
-  // and send back the object/data to the client
-
+  // if method is POST
+  // this handles the case where the client has something for us to store
   if (request.method === 'POST') {
     statusCode = 201;
-      //var data = response.getHeader('Date');
-    // what magic word to listen for?  end gets us into this fn
-    //but connect or response doesn't
+    // created variable to handle the request data
     var collectedMessage = '';
+
+    // listening as long as there is still data coming from the client
     request.on('data', function(chunk){
+      // chunk will be stored in collectedMessages for the moment
       collectedMessage += chunk;
-        //var dataWeWant = chunk.toString();
-        //console.log(dataStorage, 'dataStorage object');
-        //console.log(chunk.toString(), 'chunk?');
-        //{ username: 'Jono', message: 'Do my bidding!' }
+      //console.log(chunk.toString(), 'chunk?');
+      //{ username: 'Jono', message: 'Do my bidding!' }
     });
 
+    // the client sends the end sign when all the data has been sent
+    // it is then manipulated in the callback
     request.on('end', function () {
-      console.log(collectedMessage, 'in end condition');
-      // add stuff to message
+      // this callback will add a date to the incoming message object
       var addedDateMessage = JSON.parse(collectedMessage);
+      // add date to message
       addedDateMessage.createdAt = new Date();
       // add to results array
       dataStorage.results.push(addedDateMessage);
@@ -110,78 +64,22 @@ var requestHandler = function(request, response) {
       // return (end)
       response.end(json);
     });
-      console.log(response);
   }
 
-
+  // technically we don't need this because the default statusCode is 200
   if (request.method === 'OPTIONS') {
-
     response.writeHead(statusCode, 'this is options', headers);
     response.end(json);
   }
-
-
-// http://stackoverflow.com/questions/5892569/responding-with-a-json-object-in-nodejs-converting-object-array-to-json-string
-// function random(response) {
-//   console.log("Request handler random was called.");
-//   response.writeHead(200, {"Content-Type": "application/json"});
-//   var otherArray = ["item1", "item2"];
-//   var otherObject = { item1: "item1val", item2: "item2val" };
-//   var json = JSON.stringify({
-//     anObject: otherObject,
-//     anArray: otherArray,
-//     another: "item"
-//   });
-//   response.end(json);
-// }
-
-
-    // results:  a key in the returned object that holds an array of message objects
 
   // .writeHead() writes to the request line and headers of the response,
   // which includes the status and all headers.
   response.writeHead(statusCode, "OK", headers);
 
-  // Make sure to always call response.end() - Node may not send
-  // anything back to the client until you do. The string you pass to
-  // response.end() will be the body of the response - i.e. what shows
-  // up in the browser.
-  //
-  // Calling .end "flushes" the response's internal buffer, forcing
-  // node to actually send all the data over to the client.
-  // https://nodejs.org/api/http.html#http_response_end_data_encoding_callback
   response.end(json);
 };
 
-// createdAt: "2015-09-01T01:00:42.028Z"
-// objectId: "hwhupXO0iX"
-// updatedAt: "2015-09-01T01:00:42.028Z"
-//
-// // roomname: "4chan"
-// // text: "trololo"
-// // username: "shawndrost"
-
-//http://jsbin.com/tepapajoro/edit?js,console
-
-// These headers will allow Cross-Origin Resource Sharing (CORS).
-// This code allows this server to talk to websites that
-// are on different domains, for instance, your chat client.
-//
-// Your chat client is running from a url like file://your/chat/client/index.html,
-// which is considered a different domain.
-//
-// Another way to get around this restriction is to serve you chat
-// client from this domain by setting up static file serving.
-var defaultCorsHeaders = {
-  //"Access-Control-Allow-Origin": "*",
-  "access-control-allow-origin": "*",
-  "access-control-allow-methods": "GET, POST, PUT, DELETE, OPTIONS",
-  "access-control-allow-headers": "content-type, accept",
-  "access-control-max-age": 10 // Seconds.
-};
-
+// this exports the requestHandler function so other files can use it
 module.exports = {
     requestHandler: requestHandler
 };
-
-
