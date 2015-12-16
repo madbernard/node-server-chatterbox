@@ -33,19 +33,7 @@ var requestHandler = function(request, response) {
   // debugging help, but you should always be careful about leaving stray
   // console.logs in your code.
   console.log("Serving request type " + request.method + " for url " + request.url);
-  // what magic word to listen for?  end gets us into this fn
-  //but connect or response doesn't
-  request.on('end', function () {
-      console.log('received response');
-      request.on('data', function(chunk){
-          var dataWeWant = chunk.toString();
-          dataStorage.results.push(JSON.parse(dataWeWant));
-          //console.log(dataStorage, 'dataStorage object');
-          //console.log(chunk.toString(), 'chunk?');
-          //{ username: 'Jono', message: 'Do my bidding!' }
-      });
-  });
-
+  // https://nodejs.org/api/http.html#http_response_getheader_name
   // The outgoing status.
   // we'll need to make this a function that returns appropriate http status for the request.method and result ...?
   var statusCode = 200;
@@ -59,7 +47,7 @@ var requestHandler = function(request, response) {
   // other than plain text, like JSON or HTML.
   headers['Content-Type'] = "application/json";
 
-  var returnHeaders = JSON.stringify(headers);
+  //var returnHeaders = JSON.stringify(headers);
 
 //  var returnedObject = {results: []};
   var returnedObject = dataStorage;
@@ -72,12 +60,12 @@ var requestHandler = function(request, response) {
   //console.log(checkThis, 'the regex array');
   //console.log(checkThis === null, 'the regex array has stuff?');
 
-  // this will hand 404 code
+  // this will handle 404 code
   if (checkThis === null) {
       // change code to 404
       statusCode = 404;
 
-      response.writeHead(statusCode, returnHeaders);
+      response.writeHead(statusCode, 'Not Found', headers);
       // return (end)
       response.end(json);
   }
@@ -97,14 +85,36 @@ var requestHandler = function(request, response) {
   // and send back the object/data to the client
 
   if (request.method === 'POST') {
-    // change code to 201
     statusCode = 201;
-    // add to results array
+    // what magic word to listen for?  end gets us into this fn
+    //but connect or response doesn't
+    var collectedMessages = '';
+    request.on('data', function(chunk){
+      collectedMessages += chunk;
+        //var dataWeWant = chunk.toString();
+        //console.log(dataStorage, 'dataStorage object');
+        //console.log(chunk.toString(), 'chunk?');
+        //{ username: 'Jono', message: 'Do my bidding!' }
+    });
 
-    response.writeHead(statusCode, returnHeaders);
-    // return (end)
+    request.on('end', function () {
+      console.log(collectedMessages, 'in end condition');
+      // add to results array
+      dataStorage.results.push(JSON.parse(collectedMessages));
+      // change code to 201
+      response.writeHead(statusCode, '201 sent', headers);
+      // return (end)
+      response.end(json);
+    });
+  }
+
+  if (request.method === 'OPTIONS') {
+
+    response.writeHead(statusCode, 'this is options', headers);
     response.end(json);
   }
+
+
 // http://stackoverflow.com/questions/5892569/responding-with-a-json-object-in-nodejs-converting-object-array-to-json-string
 // function random(response) {
 //   console.log("Request handler random was called.");
@@ -124,7 +134,7 @@ var requestHandler = function(request, response) {
 
   // .writeHead() writes to the request line and headers of the response,
   // which includes the status and all headers.
-  response.writeHead(statusCode, returnHeaders);
+  response.writeHead(statusCode, "OK", headers);
 
   // Make sure to always call response.end() - Node may not send
   // anything back to the client until you do. The string you pass to
@@ -157,7 +167,7 @@ var requestHandler = function(request, response) {
 // Another way to get around this restriction is to serve you chat
 // client from this domain by setting up static file serving.
 var defaultCorsHeaders = {
-  "Access-Control-Allow-Origin": "*",
+  //"Access-Control-Allow-Origin": "*",
   "access-control-allow-origin": "*",
   "access-control-allow-methods": "GET, POST, PUT, DELETE, OPTIONS",
   "access-control-allow-headers": "content-type, accept",
