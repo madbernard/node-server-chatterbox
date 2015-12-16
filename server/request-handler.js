@@ -86,11 +86,12 @@ var requestHandler = function(request, response) {
 
   if (request.method === 'POST') {
     statusCode = 201;
+      //var data = response.getHeader('Date');
     // what magic word to listen for?  end gets us into this fn
     //but connect or response doesn't
-    var collectedMessages = '';
+    var collectedMessage = '';
     request.on('data', function(chunk){
-      collectedMessages += chunk;
+      collectedMessage += chunk;
         //var dataWeWant = chunk.toString();
         //console.log(dataStorage, 'dataStorage object');
         //console.log(chunk.toString(), 'chunk?');
@@ -98,15 +99,20 @@ var requestHandler = function(request, response) {
     });
 
     request.on('end', function () {
-      console.log(collectedMessages, 'in end condition');
+      console.log(collectedMessage, 'in end condition');
+      // add stuff to message
+      var addedDateMessage = JSON.parse(collectedMessage);
+      addedDateMessage.createdAt = new Date();
       // add to results array
-      dataStorage.results.push(JSON.parse(collectedMessages));
+      dataStorage.results.push(addedDateMessage);
       // change code to 201
       response.writeHead(statusCode, '201 sent', headers);
       // return (end)
       response.end(json);
     });
+      console.log(response);
   }
+
 
   if (request.method === 'OPTIONS') {
 
