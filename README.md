@@ -1,6 +1,6 @@
 # node-server-chatterbox
 
-This is a project I completed as a student at Hack Reactor, while pairing with . Built with Node.js and relying on async file read/write, this server replaces Parse for the previously-built [chatterbox chat client found here](https://github.com/madbernard/ajax-parse-chat-chatterbox-client).
+This is a project I completed as a student at Hack Reactor, while pairing with [@jason3j](https://github.com/jason3j). Built with Node.js and relying on async file read/write, this server replaces Parse for the previously-built [chatterbox chat client found here](https://github.com/madbernard/ajax-parse-chat-chatterbox-client).
 
 ## Structure
 
